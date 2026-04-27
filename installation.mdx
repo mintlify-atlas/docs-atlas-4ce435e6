@@ -1,0 +1,66 @@
+---
+title: "Installing Neural Amp Modeler Plugin on Windows and macOS"
+description: "Download the pre-built installer from GitHub Releases and install the VST3, AudioUnit, and standalone app on Windows 10+ or macOS 10.15 Catalina or later."
+---
+
+The easiest way to install Neural Amp Modeler Plugin is to download a pre-built installer from the GitHub Releases page. The installer handles placing the VST3 plugin, AudioUnit component, and standalone application in the correct system folders automatically — no manual file copying required.
+
+## System requirements
+
+| Platform | Minimum version |
+|---|---|
+| Windows | Windows 10 64-bit |
+| macOS | macOS 10.15 Catalina |
+
+<Note>
+  Linux is not supported by this plugin. If you use Linux, see [github.com/mikeoliphant/neural-amp-modeler-lv2](https://github.com/mikeoliphant/neural-amp-modeler-lv2) for an LV2 plugin with NAM support.
+</Note>
+
+## Installation steps
+
+<Steps>
+  <Step title="Go to the Releases page">
+    Open [github.com/sdatkinson/NeuralAmpModelerPlugin/releases](https://github.com/sdatkinson/NeuralAmpModelerPlugin/releases) in your browser.
+  </Step>
+  <Step title="Download the installer for your platform">
+    Under the latest release, expand the **Assets** section and download the file for your operating system:
+
+    - **Windows:** download the `.exe` installer
+    - **macOS:** download the `.pkg` installer
+  </Step>
+  <Step title="Run the installer">
+    Double-click the downloaded file and follow the on-screen prompts. The installer places the plugin files in the standard system locations described below.
+  </Step>
+  <Step title="Rescan plugins in your DAW">
+    Open your DAW and trigger a plugin rescan (the exact steps vary by DAW). Once the scan completes, **NeuralAmpModeler** will appear in your plugin list under the VST3 or AudioUnit category.
+  </Step>
+</Steps>
+
+## Where the plugin files are installed
+
+### macOS
+
+| Format | Location |
+|---|---|
+| AudioUnit (AU) | `~/Library/Audio/Plug-Ins/Components/` |
+| VST3 | `~/Library/Audio/Plug-Ins/VST3/` |
+| Standalone app | `/Applications/` |
+
+### Windows
+
+| Format | Location |
+|---|---|
+| VST3 | `C:\Program Files\Common Files\VST3\` |
+| Standalone app | `C:\Program Files\NeuralAmpModeler\` |
+
+<Note>
+  AudioUnit is a macOS-only format. On Windows, the VST3 format is the recommended way to use the plugin in a DAW.
+</Note>
+
+## Standalone application
+
+The installer also includes a standalone version of NAM that runs without a DAW. You can use it to play guitar through amp models directly from your audio interface. Open it from your Applications folder (macOS) or Start Menu (Windows) like any other application.
+
+<Warning>
+  The standalone app only uses input channel 1. If your audio interface routes your guitar to input 2 (for example, on a Focusrite Solo), use input 1 instead, or use the plugin inside a DAW where you can freely route any input channel.
+</Warning>

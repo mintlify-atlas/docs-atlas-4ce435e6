@@ -1,0 +1,82 @@
+---
+title: "Plugin controls reference: knobs, switches, and meters"
+description: "Complete reference for every knob, toggle switch, and level meter in Neural Amp Modeler Plugin, with ranges, defaults, and the DSP behavior each control drives."
+---
+
+Neural Amp Modeler Plugin has six knobs, three toggle switches, and two level meters arranged across the main interface. The knobs are laid out left-to-right in signal-flow order: input, gate, three-band EQ, and output. The tone stack and noise gate each have a dedicated on/off switch, and a third switch controls whether the loaded IR is active. Two vertical meters on the outer edges of the interface show input and output levels in real time.
+
+## Knobs
+
+| Control | Parameter | Range | Default | Description |
+|---|---|---|---|---|
+| **Input** | Input Level | −20 to +20 dB | 0 dB | Scales the signal entering the plugin before the noise gate and NAM model. Use this to set the drive level into the model correctly. |
+| **Gate** | Noise Gate Threshold | −100 to 0 dB | −80 dB | Sets the level below which the noise gate closes. Signals quieter than this threshold are attenuated. Disabled and greyed out when the Noise Gate toggle is off. |
+| **Bass** | Tone Bass | 0 to 10 | 5 (noon) | Controls a low-shelf filter in the tone stack. Values below 5 cut low frequencies; values above 5 boost them. At 5, the filter applies no change. |
+| **Mid** | Tone Mid | 0 to 10 | 5 (noon) | Controls a peaking (bell) filter in the tone stack. Values below 5 cut the mid band; values above 5 boost it. At 5, the filter applies no change. |
+| **Treble** | Tone Treble | 0 to 10 | 5 (noon) | Controls a high-shelf filter in the tone stack. Values below 5 cut high frequencies; values above 5 boost them. At 5, the filter applies no change. |
+| **Output** | Output Level | −40 to +40 dB | 0 dB | Scales the final output of the plugin after the model, tone stack, and IR. Acts in combination with the selected output mode. |
+
+<Info>
+  The three tone stack knobs (Bass, Mid, Treble) are greyed out and disabled when the **EQ** toggle is off. Changes you make while EQ is disabled are stored and take effect when you re-enable it.
+</Info>
+
+## Toggle switches
+
+### Noise Gate
+
+The **Noise Gate** switch enables or disables the noise gate stage. When active, the gate monitors the input signal level against the Threshold knob value and attenuates the output when the signal drops below that threshold. This suppresses hum, hiss, and amp noise during silent passages without affecting the tone while you're playing.
+
+When the Noise Gate switch is turned off, the Threshold knob is greyed out and the gate has no effect on the signal.
+
+### EQ
+
+The **EQ** switch enables or disables the three-band tone stack. The tone stack sits after the NAM model in the signal chain and uses three filters:
+
+- **Bass** — low-shelf filter
+- **Mid** — peaking (bell) filter
+- **Treble** — high-shelf filter
+
+All three filters pass audio unchanged when their knobs are at 5 (noon). Turning the EQ switch off bypasses all three filters simultaneously and greys out the Bass, Mid, and Treble knobs.
+
+### IR toggle
+
+The **IR toggle** switch enables or disables IR convolution processing. When off, audio bypasses the IR stage entirely even if a `.wav` file is loaded. The IR file browser is greyed out when the toggle is off.
+
+<Tip>
+  Toggle the IR switch on and off while playing to quickly compare your tone with and without cabinet simulation. The loaded file is retained so you can flip back instantly.
+</Tip>
+
+## Level meters
+
+Two vertical level meters sit on the left and right edges of the interface:
+
+- **Input meter** (left) — displays the level of the signal entering the plugin after the Input knob gain is applied. This is the signal fed into the noise gate and then the NAM model.
+- **Output meter** (right) — displays the level of the signal leaving the plugin after the Output knob gain, output mode adjustment, and any IR processing.
+
+Both meters show peak and average levels simultaneously. The meters use a range of approximately −70 dBFS to 0 dBFS. The peak hold indicator turns red when the signal approaches 0 dBFS, indicating potential clipping.
+
+<Warning>
+  In the standalone app, the output is hard-clamped to ±1.0 to protect your audio interface. In a DAW plugin, no clamping is applied — downstream processors will see the full unclipped value. Watch the output meter and use the Output knob to keep levels reasonable.
+</Warning>
+
+## Signal flow summary
+
+The controls follow the plugin's internal processing order:
+
+<Steps>
+  <Step title="Input Level knob">Applies gain before all processing.</Step>
+  <Step title="Noise Gate (switch + Threshold knob)">Attenuates quiet passages when enabled.</Step>
+  <Step title="NAM model">Processes the gated signal through the neural network.</Step>
+  <Step title="EQ tone stack (switch + Bass/Mid/Treble knobs)">Shapes the model output with three filters when enabled.</Step>
+  <Step title="IR convolution (IR toggle)">Applies cabinet simulation when enabled and an IR file is loaded.</Step>
+  <Step title="Output Level knob">Scales the final output, combined with the active output mode.</Step>
+</Steps>
+
+<CardGroup cols={2}>
+  <Card title="Output modes" icon="gauge-simple" href="/using/output-modes">
+    Understand how Raw, Normalized, and Calibrated modes affect the Output knob.
+  </Card>
+  <Card title="Loading models" icon="microchip" href="/using/loading-models">
+    Load a .nam model to process your signal through the neural network stage.
+  </Card>
+</CardGroup>

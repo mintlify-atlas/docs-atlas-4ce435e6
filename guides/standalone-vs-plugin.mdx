@@ -1,0 +1,86 @@
+---
+title: "NAM standalone app vs. VST3/AU plugin: when to use each"
+description: "Understand the differences between the NAM standalone app and the plugin, including I/O routing, output clamping, and when to use each."
+---
+
+The Neural Amp Modeler ships as both a standalone application and a VST3/AU plugin. Both run the same neural network models, but they behave differently in important ways — particularly around audio routing, output handling, and how you select models on macOS. Knowing which mode to use for your situation will save you troubleshooting time.
+
+## When to use the standalone app
+
+The standalone app is the fastest way to get a modeled amp tone without opening a DAW. It handles its own audio I/O directly through your operating system and audio interface driver.
+
+**Use the standalone when you want to:**
+- Practice guitar without launching a DAW
+- Monitor through a modeled amp tone in real time
+- Quickly audition NAM model files
+
+### Input routing limitation
+
+The standalone app only supports **input 1** on your audio interface. This is a known limitation: the app doesn't offer the channel routing flexibility that DAW hosts provide.
+
+<Warning>
+If your guitar is plugged into input 2 — common on interfaces like the Focusrite Scarlett Solo, where the instrument input is channel 2 — you will get no signal. Move your cable to input 1, or use a DI box to route your signal, or switch to the plugin in a DAW.
+</Warning>
+
+The standalone's channel I/O is fixed at mono in, stereo out (`1-2`). Input gain is applied as-is to whatever signal arrives on input 1, without any averaging or division across channels.
+
+### Output clamping
+
+In standalone mode, the output is hard-clamped to the range **[-1.0, 1.0]** before it reaches your audio interface. This protects your speakers and ears from runaway signal levels but means that if a model produces large values, those will be clipped at the digital output stage.
+
+### Model selection on macOS
+
+On macOS, the standalone app prompts you to select a **directory** rather than an individual `.nam` file. This is by design — macOS file system sandboxing prevents the app from browsing arbitrary file paths, so the app asks you to grant access to a folder containing your models. Once you point it at a directory, you can browse and switch between models inside that folder using the left/right arrow buttons in the UI.
+
+<Note>
+On Windows, the standalone opens a standard file picker where you select an individual `.nam` file directly.
+</Note>
+
+## When to use the plugin
+
+The VST3/AU plugin runs inside a DAW or plugin host. This gives you access to the full feature set and removes several limitations present in the standalone.
+
+**Use the plugin when you want to:**
+- Record guitar to a DAW track with the modeled tone applied
+- Use the plugin as part of a signal chain with other effects
+- Route any input channel — not just input 1
+- Use the full mono/stereo routing options
+
+### Supported channel configurations
+
+The plugin supports three routing modes, negotiated with your DAW:
+
+| Configuration | Description |
+|---|---|
+| `1-1` | Mono in, mono out |
+| `1-2` | Mono in, stereo out |
+| `2-2` | Stereo in, stereo out |
+
+When the plugin receives a stereo input (`2-2`), it sums both channels to mono internally before processing through the neural network model, dividing the combined gain by the number of input channels. This prevents the summed signal from being twice as loud as a mono input.
+
+### Output is not clamped
+
+In plugin mode, the output is **not** clamped. Large values pass through to whatever comes next in your signal chain. Your DAW's own metering and gain staging are responsible for managing levels. Use the Output knob and the output mode (Raw / Normalized / Calibrated) to keep levels under control.
+
+<Tip>
+If you are using a DI box to connect a high-impedance instrument signal to an interface with only line-level inputs, plug into input 1 of your interface. A passive DI box converts instrument level to balanced line level and can resolve both level-matching and routing issues.
+</Tip>
+
+## Quick comparison
+
+<CardGroup cols={2}>
+  <Card title="Standalone app" icon="headphones">
+    - No DAW required
+    - Input 1 only
+    - Mono in, stereo out
+    - Output clamped to [-1.0, 1.0]
+    - macOS: select a model directory
+  </Card>
+  <Card title="VST3/AU plugin" icon="plug">
+    - Runs inside a DAW or host
+    - Any input channel
+    - Supports 1-1, 1-2, and 2-2 routing
+    - Output unclamped
+    - All platforms: select individual `.nam` file
+  </Card>
+</CardGroup>

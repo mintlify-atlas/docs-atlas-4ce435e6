@@ -1,0 +1,72 @@
+{
+  "projectType": "general",
+  "projectName": "Neural Amp Modeler Plugin",
+  "projectDescription": "A VST3/AudioUnit plugin that uses neural network models to accurately emulate guitar amplifiers and other audio hardware.",
+  "theme": "almond",
+  "primaryColor": "#848484",
+  "lightColor": "#161616",
+  "darkColor": "#cbcbcb",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Using the Plugin",
+            "pages": [
+              "using/loading-models",
+              "using/impulse-responses",
+              "using/controls",
+              "using/output-modes"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/standalone-vs-plugin",
+              "guides/input-calibration",
+              "guides/troubleshooting"
+            ]
+          },
+          {
+            "group": "Development",
+            "pages": [
+              "development/building",
+              "development/contributing",
+              "development/architecture"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "VST3 and AudioUnit plugin formats for Windows and macOS",
+    "Loads neural network amp models (.nam files) for real-time guitar processing",
+    "Impulse Response (IR) loader for cabinet simulation",
+    "3-band tone stack (Bass, Mid, Treble) with enable/disable toggle",
+    "Noise gate with adjustable threshold",
+    "Input/output level controls with calibration support",
+    "Multiple output modes: Raw, Normalized, and Calibrated",
+    "Automatic sample rate resampling for models trained at different rates",
+    "Real-time input and output level meters",
+    "Standalone app mode in addition to plugin mode"
+  ],
+  "publicApiSurface": [
+    "NeuralAmpModeler plugin class (VST3/AU/Standalone)",
+    "Parameters: Input Level, Output Level, Bass, Mid, Treble, Noise Gate Threshold, Noise Gate Active, EQ Active, IR Toggle, Calibrate Input, Input Calibration Level, Output Mode",
+    "Model file format: .nam (JSON-based neural amp model files)",
+    "IR file format: .wav (impulse response files for cabinet simulation)",
+    "Output modes: Raw, Normalized, Calibrated",
+    "ResamplingNAM: resampling wrapper for NAM DSP models",
+    "BasicNamToneStack: 3-band tone stack (bass/mid/treble shelving/peaking filters)"
+  ]
+}

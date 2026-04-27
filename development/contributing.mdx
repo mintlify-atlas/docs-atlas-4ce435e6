@@ -1,0 +1,85 @@
+---
+title: "How to contribute code and fixes to the NAM plugin"
+description: "How to propose features, pick up issues, write and format code, run the manual testing checklist, and open a pull request for the NAM plugin."
+---
+
+The Neural Amp Modeler plugin is an open-source project that welcomes contributions. The process is intentionally lightweight: communicate early, keep others informed of your timeline, write clean code, and verify your changes manually before opening a pull request. Because the project moves quickly, the guidance below may change — when in doubt, check the [issue tracker](https://github.com/sdatkinson/NeuralAmpModelerPlugin/issues) or ask directly in a thread.
+
+## Contribution process
+
+<Steps>
+  <Step title="Open a GitHub issue first">
+    Before writing any code, start a conversation on GitHub. This ensures that your intended change fits the project's direction and avoids duplicated effort.
+
+    - **New feature or idea** — [open a feature request issue](https://github.com/sdatkinson/NeuralAmpModelerPlugin/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=%5BFEATURE%5D) and describe what you'd like to see.
+    - **Existing bug** — check whether an issue already exists. If not, file a bug report with steps to reproduce.
+
+    <Info>
+      Even small changes benefit from a quick issue comment. It lets the maintainer flag if the same fix is already in progress.
+    </Info>
+  </Step>
+
+  <Step title="Claim the issue and provide a timeline">
+    If you want to work on an [existing open issue](https://github.com/sdatkinson/NeuralAmpModelerPlugin/issues), comment in that issue's thread to let others know. Include a rough timeline for when you expect to have something ready. This prevents maintainers and other contributors from duplicating your work.
+  </Step>
+
+  <Step title="Write your code">
+    Fork the repository, create a branch from `main`, and implement your changes. Keep commits focused — one logical change per commit makes reviews easier.
+
+    <Tip>
+      Clone with `--recurse-submodules` so that the build works immediately. See the [building guide](/development/building) for full setup instructions.
+    </Tip>
+  </Step>
+
+  <Step title="Format with clang-format">
+    All C++ source files (`.cpp` and `.h`) must be formatted according to the LLVM clang-format style before committing. A convenience script at the repository root handles this for you:
+
+    ```bash
+    bash format.bash
+    ```
+
+    Run this command and commit any resulting changes alongside your other modifications. The project also ships a `.pre-commit-config.yaml` that you can use with the [pre-commit](https://pre-commit.com) framework to run formatting automatically on each commit.
+
+    <Note>
+      Unformatted code will show up as noise in the PR diff and may delay review. Run `bash format.bash` even if you believe your editor already applied the right style.
+    </Note>
+  </Step>
+
+  <Step title="Run the manual testing checklist">
+    The project does not yet have automated unit tests. Before opening a pull request, work through the following checklist manually to confirm nothing is broken:
+
+    **Standalone build**
+    - [ ] The standalone app builds without errors.
+    - [ ] The standalone app runs and produces audio output.
+
+    **Core plugin functionality**
+    - [ ] You can load a new-style (`.nam` file) model.
+    - [ ] You can load an old-style (directory) model.
+    - [ ] You can load a supported IR (`.wav` file).
+    - [ ] The EQ section (bass, mid, treble) affects the sound.
+
+    **VST3**
+    - [ ] The VST3 plugin builds without errors.
+    - [ ] The plugin loads successfully in the [VST3PluginTestHost](https://steinbergmedia.github.io/vst3_dev_portal/pages/What+is+the+VST+3+SDK/Plug-in+Test+Host.html).
+    - [ ] The plugin passes all unit tests in VST3PluginTestHost's testing tool.
+
+    **AU (macOS only)**
+    - [ ] The AU (AudioUnit) plugin builds without errors.
+
+    <Warning>
+      If you skip the VST3PluginTestHost checks, your PR may be asked for changes after review. Running the host tests is the closest equivalent to an automated test suite currently available.
+    </Warning>
+  </Step>
+
+  <Step title="Open a pull request">
+    Push your branch to your fork and open a pull request against `main`. Reference the issue number in the PR description (e.g. `Closes #123`) so that GitHub links them automatically. Describe what changed and why, and note any parts of the testing checklist that you were unable to verify.
+  </Step>
+</Steps>
+
+## Code style
+
+The C++ codebase follows the **LLVM** style as enforced by `clang-format`. The rules are defined in `.clang-format` at the repository root. The key practical rule: run `bash format.bash` before every commit. Beyond formatting, the project does not enforce strict style rules — write clear, readable code and let the formatter handle the rest.
+
+## No automated unit tests (help wanted)
+
+The repository currently has no automated unit test suite. If you are interested in proposing a testing framework suitable for an iPlug2 audio plugin, please [open a feature request issue](https://github.com/sdatkinson/NeuralAmpModelerPlugin/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=%5BFEATURE%5D). Contributions in this area are especially welcome.

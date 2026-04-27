@@ -1,0 +1,112 @@
+---
+title: "Build Neural Amp Modeler Plugin from source on macOS/Windows"
+description: "Step-by-step guide to cloning, configuring dependencies, and compiling the NAM plugin on macOS and Windows using iPlug2 and the build scripts."
+---
+
+Building the Neural Amp Modeler plugin from source requires a C++ toolchain, Git with submodule support, and a handful of downloaded SDKs. The build system is based on [iPlug2](https://iplug2.github.io), which provides the plugin framework and dependency management scripts. On macOS the output includes VST3, AU, and Standalone formats; on Windows it includes VST3 and Standalone. The continuous integration pipeline runs these same steps on `macos-latest` and `windows-latest` GitHub-hosted runners via GitHub Actions, so the instructions below mirror exactly what CI does.
+
+## Prerequisites
+
+<CardGroup cols={2}>
+  <Card title="macOS" icon="apple">
+    - macOS 10.15 (Catalina) or later
+    - Xcode with command-line tools (`xcode-select --install`)
+    - Git 2.x or later
+  </Card>
+  <Card title="Windows" icon="windows">
+    - Windows 10 (64-bit) or later
+    - Visual Studio 2019 or 2022 with the **Desktop development with C++** workload
+    - Git for Windows 2.x or later
+  </Card>
+</CardGroup>
+
+<Note>
+  The Windows build uses MSBuild. The CI workflow installs it via the `microsoft/setup-msbuild` action. If you are building locally, ensure MSBuild is on your `PATH` or launch the build from a **Developer Command Prompt for Visual Studio**.
+</Note>
+
+## Build steps
+
+<Steps>
+  <Step title="Clone the repository with all submodules">
+    The plugin depends on four Git submodules: `iPlug2`, `NeuralAmpModelerCore`, `AudioDSPTools`, and `eigen`. You must clone recursively or the build will fail.
+
+    ```bash
+    git clone --recurse-submodules https://github.com/sdatkinson/NeuralAmpModelerPlugin
+    cd NeuralAmpModelerPlugin
+    ```
+
+    If you already cloned without submodules, initialise them now:
+
+    ```bash
+    git submodule update --init --recursive
+    ```
+  </Step>
+
+  <Step title="Download the VST3 SDK">
+    iPlug2 ships a helper script that fetches the Steinberg VST3 SDK and places it in the correct location under `iPlug2/Dependencies/IPlug/`.
+
+    ```bash
+    cd iPlug2/Dependencies/IPlug
+    bash download-iplug-sdks.sh
+    cd ../../..
+    ```
+  </Step>
+
+  <Step title="Download prebuilt libraries">
+    A second helper script fetches the prebuilt platform libraries that iPlug2 requires (graphics backends, audio drivers, etc.).
+
+    ```bash
+    cd iPlug2/Dependencies
+    bash download-prebuilt-libs.sh
+    cd ../..
+    ```
+  </Step>
+
+  <Step title="Run the platform build script">
+    Navigate into `NeuralAmpModeler/scripts/` and run the appropriate script for your platform. The `full zip` arguments instruct the script to build all formats and package them into a zip archive.
+
+    <CodeGroup>
+
+    ```bash macOS
+    cd NeuralAmpModeler/scripts
+    bash makedist-mac.sh full zip
+    ```
+
+    ```powershell Windows
+    cd NeuralAmpModeler\scripts
+    .\makedist-win.bat full zip
+    ```
+
+    </CodeGroup>
+  </Step>
+
+  <Step title="Locate the build output">
+    After a successful build, the compiled plugin bundles and the zip archive are placed in the platform-specific output directory:
+
+    <CodeGroup>
+
+    ```text macOS output
+    NeuralAmpModeler/build-mac/out/
+    ```
+
+    ```text Windows output
+    NeuralAmpModeler/build-win/out/
+    ```
+
+    </CodeGroup>
+
+    On macOS this directory contains the `.vst3`, `.component` (AU), and `.app` (Standalone) bundles. On Windows it contains the `.vst3` and `.exe` files.
+  </Step>
+</Steps>
+
+## Continuous integration
+
+Every pull request and the default weekly schedule trigger the **Build Native** GitHub Actions workflow (`.github/workflows/build-native.yml`). The workflow runs the same five steps above in parallel on `macos-latest` and `windows-latest` runners and uploads the resulting `NeuralAmpModeler-mac` and `NeuralAmpModeler-win` artifacts. You can download these artifacts directly from the **Actions** tab of the repository to verify a build without installing locally.
+
+## Containerised development
+
+A `.devcontainer` configuration is included in the repository for developers who prefer a fully isolated build environment. Opening the repository in VS Code with the **Dev Containers** extension (or using GitHub Codespaces) will provision a container with the required toolchain pre-installed.
+
+<Tip>
+  If you encounter missing header errors, double-check that all submodules are initialised with `git submodule status`. Any entry prefixed with `-` is not yet initialised.
+</Tip>

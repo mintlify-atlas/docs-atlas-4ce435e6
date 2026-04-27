@@ -1,0 +1,74 @@
+---
+title: "Neural Amp Modeler Plugin: overview and signal chain"
+description: "Learn what the Neural Amp Modeler Plugin does, how its signal chain works, and which platforms and plugin formats are supported before you install."
+---
+
+Neural Amp Modeler (NAM) Plugin is a VST3 and AudioUnit plugin — version 0.7.13 — that runs neural network amp models in real time inside your DAW. It is built on the [iPlug2](https://iplug2.github.io) framework and lets you load `.nam` model files, which are trained captures of real amplifiers and outboard gear. The plugin is mono internally, meaning it processes a single input channel and can deliver mono or stereo output depending on your DAW routing configuration. A standalone app is also included in the installer for use without a DAW.
+
+## Signal chain
+
+Audio travels through six stages in sequence before leaving the plugin:
+
+<Steps>
+  <Step title="Input gain and calibration">
+    The **Input** knob controls the level feeding the rest of the chain. Optional input calibration aligns your audio interface's analog level with the signal level the model expects, which helps ensure consistent tone across different hardware setups.
+  </Step>
+  <Step title="Noise gate">
+    A noise gate sits before the NAM model. When active, it silences the signal below a configurable threshold, cutting hum and hiss during silent passages without coloring your tone while you play.
+  </Step>
+  <Step title="NAM model processing">
+    The loaded `.nam` file runs here. The plugin resamples automatically when the model was trained at a different sample rate than your current session — no manual configuration required.
+  </Step>
+  <Step title="Tone stack EQ">
+    A three-band tone stack (Bass, Mid, Treble) shapes the model's output. This mirrors the EQ section found on a physical amp and can be bypassed when you want to hear the model without additional coloring.
+  </Step>
+  <Step title="Impulse Response (cabinet simulation)">
+    An optional `.wav` IR file applies cabinet and microphone coloration after the amp model. Loading an IR gives you a complete, speaker-in-the-room sound. The IR section can be toggled on or off independently.
+  </Step>
+  <Step title="Output level and metering">
+    The **Output** knob sets the final level. Real-time input and output meters let you monitor signal throughout the chain, and multiple output modes let you control how the plugin normalizes its output.
+  </Step>
+</Steps>
+
+## Supported formats and platforms
+
+The plugin ships as a VST3 and AudioUnit (AU) plugin, plus a standalone application. All three are included in the same installer.
+
+| Format | Availability |
+|---|---|
+| VST3 | Windows, macOS |
+| AudioUnit (AU) | macOS |
+| Standalone app | Windows, macOS |
+
+**Platform requirements:**
+
+- **Windows:** Windows 10 64-bit or later
+- **macOS:** macOS 10.15 Catalina or later
+
+<Note>
+  Linux is not supported by this plugin. An LV2 plugin with NAM support is available separately at [github.com/mikeoliphant/neural-amp-modeler-lv2](https://github.com/mikeoliphant/neural-amp-modeler-lv2).
+</Note>
+
+## Model and IR files
+
+The plugin works with two types of files:
+
+- **`.nam` files** — neural network amp models that capture the character of a real amplifier, preamp, or pedal. Models are distributed by the community at [neuralampmodeler.com](https://www.neuralampmodeler.com/users#comp-marb84o5).
+- **`.wav` files** — impulse responses (IRs) that capture the frequency response of a speaker cabinet and microphone combination.
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Download the pre-built installer and get the plugin running on Windows or macOS.
+  </Card>
+  <Card title="Quick start" icon="rocket" href="/quickstart">
+    Load your first NAM model and IR file and start playing in a few steps.
+  </Card>
+  <Card title="Loading models" icon="microchip" href="/using/loading-models">
+    Learn how to browse, load, and switch between `.nam` model files.
+  </Card>
+  <Card title="Plugin controls" icon="sliders" href="/using/controls">
+    Understand every knob and switch in the plugin interface.
+  </Card>
+</CardGroup>

@@ -1,133 +1,67 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
-icon: 'star'
+title: "Neural Amp Modeler Plugin: AI-powered amp emulation"
+description: "Neural Amp Modeler Plugin brings neural network amp modeling to VST3 and AudioUnit hosts on Windows and macOS. Load .nam model files for real-time guitar tone."
 ---
 
-## Setting up
+Neural Amp Modeler (NAM) Plugin is a VST3 and AudioUnit plugin that runs neural network amp models in real time inside your DAW. Built on the [iPlug2](https://iplug2.github.io) framework, it lets you load `.nam` model files — trained captures of real amplifiers and gear — and play through them with low latency, accurate tone, and full DAW integration.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Download the pre-built installer for Windows or macOS and get the plugin running in minutes.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Load your first NAM model and IR file and start playing in three steps.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Plugin Controls" icon="sliders" href="/using/controls">
+    Learn every knob and switch: input/output levels, tone stack, noise gate, and meters.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Loading Models" icon="microchip" href="/using/loading-models">
+    Find and load .nam model files that capture real amps, preamps, and outboard gear.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## What NAM Plugin does
 
-Everything you need to create world-class documentation.
+The plugin chains several DSP stages in sequence to give you a full amp-in-a-box signal path:
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+<Steps>
+  <Step title="Input gain and calibration">
+    Set the input level to drive the model correctly. Optional input calibration aligns your interface's analog level with the model's expected signal.
+  </Step>
+  <Step title="Noise gate">
+    A configurable noise gate silences unwanted hum and hiss when you're not playing, without coloring your tone.
+  </Step>
+  <Step title="NAM model processing">
+    The neural network model runs in real time, resampling automatically if the model was trained at a different sample rate than your session.
+  </Step>
+  <Step title="Tone stack EQ">
+    A 3-band tone stack (Bass, Mid, Treble) lets you shape the output of the model, just like the EQ section on a real amp.
+  </Step>
+  <Step title="Impulse Response (cabinet sim)">
+    Load a `.wav` IR file to add cabinet and microphone coloration after the amp model for a complete, speaker-in-the-room sound.
+  </Step>
+  <Step title="Output level and metering">
+    Set the final output level with multiple output modes — Raw, Normalized, or Calibrated — and monitor signal with real-time input and output meters.
+  </Step>
+</Steps>
 
-## Make your content agent ready
+## Explore the documentation
 
-Make your docs work for humans and AI agents alike.
+<CardGroup cols={2}>
+  <Card title="Impulse Responses" icon="wave-square" href="/using/impulse-responses">
+    Load WAV impulse response files for cabinet simulation after your amp model.
+  </Card>
+  <Card title="Output Modes" icon="gauge-simple" href="/using/output-modes">
+    Understand Raw, Normalized, and Calibrated output modes and when to use each.
+  </Card>
+  <Card title="Standalone vs Plugin" icon="plug" href="/guides/standalone-vs-plugin">
+    Know when to use the standalone app versus the VST3/AU plugin in your DAW.
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/guides/troubleshooting">
+    Fix common issues: crashes, graphics problems, and audio I/O configuration.
+  </Card>
+</CardGroup>
 
-<Columns cols={2}>
-  <Card
-    title="Prompt component"
-    icon="robot"
-    href="/agent-ready/prompt"
-  >
-    Embed shareable AI prompts readers can copy or open in Cursor.
-  </Card>
-  <Card
-    title="Visibility"
-    icon="eye"
-    href="/agent-ready/visibility"
-  >
-    Show different content to humans and agents reading your docs.
-  </Card>
-  <Card
-    title="Contextual menu"
-    icon="bolt"
-    href="/agent-ready/contextual"
-  >
-    Give readers one-click access to Claude, ChatGPT, Cursor, and more.
-  </Card>
-  <Card
-    title="AI coding tools"
-    icon="wand-magic-sparkles"
-    href="/ai-tools/claude-code"
-  >
-    Set up Claude Code, Cursor, or Windsurf with Mintlify's skill.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<Note>
+  Looking for NAM model files to load? Visit [neuralampmodeler.com](https://www.neuralampmodeler.com/users#comp-marb84o5) to browse community-shared captures of real amps and gear.
+</Note>

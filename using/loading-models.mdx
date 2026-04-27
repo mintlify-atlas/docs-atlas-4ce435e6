@@ -1,0 +1,74 @@
+---
+title: "How to load and manage NAM model files in the plugin"
+description: "Learn how to browse, load, and manage .nam model files — neural network captures of real amplifiers and gear — using the plugin's file browser."
+---
+
+NAM model files (`.nam`) are neural network captures of real amplifiers, preamps, and outboard gear. Each file encodes the sonic character of the original hardware so the plugin can reproduce it accurately in real time. Models are shared by the community and trained using the NAM training tools; you can load any compatible `.nam` file directly into the plugin without installing anything additional.
+
+## Where to get model files
+
+The NAM community shares model files at [neuralampmodeler.com](https://www.neuralampmodeler.com/users#comp-marb84o5). You can also click the globe **Get** button in the plugin's model browser, which opens the same page directly in your browser.
+
+## How to load a model
+
+<Steps>
+  <Step title="Open the file browser">
+    Click the **folder icon** (load button) on the left side of the model browser strip near the bottom of the plugin. A system file dialog opens.
+  </Step>
+  <Step title="Select a .nam file">
+    Navigate to your `.nam` file and select it. The plugin validates the file immediately after you choose it.
+
+    <Note>
+      On the **macOS standalone app**, sandboxing restrictions mean the dialog asks you to select a **directory** rather than a single file. The plugin then loads the first `.nam` file it finds in that directory and lets you cycle through the rest.
+    </Note>
+  </Step>
+  <Step title="Wait for the model to load">
+    After selection, the filename appears in the browser label. The model is validated and staged on a background thread, then switched in at the next safe processing boundary so audio is never interrupted mid-buffer.
+  </Step>
+</Steps>
+
+## Navigating between models
+
+Once a directory has been scanned, the file browser gives you several ways to switch between models without reopening the dialog:
+
+- **Left arrow** — loads the previous `.nam` file in the same directory
+- **Right arrow** — loads the next `.nam` file in the same directory
+- **Filename label** — click to open a popup menu listing all `.nam` files in the current directory; select any entry to load it directly
+
+## Clearing a loaded model
+
+When a model is loaded, the **Get** button is replaced by an **X** (clear) button on the right side of the model browser. Click it to unload the current model. The plugin falls back to passing audio through unprocessed until you load another model.
+
+## What happens during loading
+
+When you select a file, `nam::get_dsp()` reads the `.nam` JSON and reconstructs the neural network. The plugin then checks two requirements:
+
+- The model must have **exactly 1 input channel**
+- The model must have **exactly 1 output channel**
+
+If either check fails, loading is aborted and an error dialog appears. If any other error occurs during parsing, loading also fails.
+
+On success, the model is wrapped in a `ResamplingNAM` object that transparently handles sample rate conversion. If your session runs at a different sample rate than the one the model was trained at, the wrapper resamples on the fly with no extra configuration required on your part.
+
+<Info>
+  Models that predate sample rate metadata in the `.nam` format are assumed to have been trained at **48 kHz**. This covers the large majority of community-shared models.
+</Info>
+
+## Understanding the FAILED label
+
+If loading fails after the file dialog closes, the filename label in the browser changes to `(FAILED) filename.nam`. Common causes include:
+
+- The file is corrupted or not a valid `.nam` file
+- The model has more than one input or output channel (not currently supported)
+- A runtime error occurred while initializing the neural network weights
+
+After a failure the browser returns to its empty state. You can immediately try loading a different file or retry the same file.
+
+<CardGroup cols={2}>
+  <Card title="Impulse responses" icon="wave-square" href="/using/impulse-responses">
+    Load a cabinet IR to complete the signal chain after your amp model.
+  </Card>
+  <Card title="Controls reference" icon="sliders" href="/using/controls">
+    Set input level and output level to drive your model correctly.
+  </Card>
+</CardGroup>

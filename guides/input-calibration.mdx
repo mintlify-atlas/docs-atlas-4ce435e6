@@ -1,0 +1,74 @@
+---
+title: "Input calibration: matching analog levels to models"
+description: "Learn how NAM's input calibration aligns your audio interface's analog gain with a model's trained input level, and when you need to enable it."
+---
+
+Every NAM model is trained on guitar signal recorded at a specific analog level. If the level reaching the plugin is significantly different from the level the model was trained on, the model may behave unexpectedly — producing a tone that is too clean, too saturated, or simply off-character. Input calibration is NAM's way of automatically correcting for this mismatch without you having to manually hunt for the right Input knob position.
+
+## What input calibration does
+
+When **Calibrate Input** is enabled, the plugin reads two values:
+
+1. **Your calibration level** — the `Input Calibration Level` setting (in dBu), which represents the analog level at your interface that corresponds to 0 dBFS at the plugin's input.
+2. **The model's trained input level** — a value embedded in the model file itself (only present in models that include this metadata).
+
+The plugin then automatically adjusts the input gain by the difference:
+
+```
+adjusted input gain = input gain + (calibration level − model's expected input level)
+```
+
+The result is that the signal entering the neural network model is scaled to match the level the model was trained on, regardless of how your interface is configured.
+
+## The Input Calibration Level setting
+
+The `Input Calibration Level` parameter is found in the **Settings** page (click the gear icon in the plugin UI). Its range is -60 to +60 dBu, with a default of **12.0 dBu**.
+
+The value means: "at 0 dBFS in the host, the signal entering this plugin originated from an analog signal of this many dBu RMS."
+
+**Why 12 dBu as the default?** This is a common alignment point for professional audio interfaces. Gear operating at "+4 dBu nominal" typically has headroom such that 0 dBFS corresponds to somewhere between 12 and 24 dBu, depending on the interface. 12 dBu is a reasonable starting point for most professional interfaces.
+
+Consumer gear operating at "-10 dBV nominal" corresponds to approximately -7.8 dBu, which is substantially lower. If you are using a consumer-grade interface, you may need to set the calibration level lower to match your actual signal chain.
+
+<Note>
+Most users do not need to change this setting. Input calibration is intended for situations where you want precise, repeatable tone matching — for example, when a model was trained at a known level and you want to replicate that exactly. If your tone sounds right with the default settings, leave calibration off.
+</Note>
+
+## When calibration controls are available
+
+The `Calibrate Input` toggle and `Input Calibration Level` field are only active when a model that includes input level metadata is loaded. If the currently loaded model does not have this data, both controls will appear greyed out.
+
+<Info>
+Older NAM models (trained before input level metadata was introduced) do not contain this information. If the calibration controls are disabled, your model doesn't support this feature. Use the Input knob on the main page to adjust level manually instead.
+</Info>
+
+When you load a compatible model, the plugin enables the calibration controls and shows the model's embedded input and output level values in the Settings panel under "Model information."
+
+## Enabling and configuring input calibration
+
+<Steps>
+  <Step title="Open the Settings page">
+    Click the **gear icon** in the top-right corner of the plugin UI to open the Settings page.
+  </Step>
+  <Step title="Check that calibration controls are active">
+    If the `Calibrate Input` toggle and the `Input Calibration Level` field are greyed out, the loaded model does not include input level metadata. Load a compatible model to proceed.
+  </Step>
+  <Step title="Set your calibration level">
+    Enter the dBu value that corresponds to 0 dBFS at your interface's output. Consult your interface's documentation for this value. The default of 12.0 dBu is appropriate for many professional interfaces.
+  </Step>
+  <Step title="Enable calibration">
+    Toggle **Calibrate Input** on. The plugin will immediately apply the gain correction based on the difference between your calibration level and the model's expected input level.
+  </Step>
+</Steps>
+
+## Output calibration
+
+The Settings page also exposes an **Output Mode** selector with three options:
+
+| Mode | Behavior |
+|---|---|
+| **Raw** | No output adjustment. The model's output level is passed through unchanged. |
+| **Normalized** | Output gain is adjusted so all models play at approximately the same loudness (target: −18 dB). Requires the model to have loudness metadata. |
+| **Calibrated** | Output gain is adjusted based on the model's trained output level relative to the input calibration level. Requires the model to have output level metadata. |
+
+Normalized and Calibrated modes are greyed out if the loaded model does not contain the required metadata.

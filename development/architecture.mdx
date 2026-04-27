@@ -1,0 +1,160 @@
+---
+title: "NAM plugin architecture: signal chain and internals"
+description: "How the NAM plugin is structured internally: the real-time signal chain, thread-safe model loading, automatic resampling, and state serialization."
+---
+
+The Neural Amp Modeler plugin is a C++ audio plugin built on [iPlug2](https://iplug2.github.io). Internally it processes audio in **mono** regardless of the host's channel configuration: stereo inputs are averaged down to mono before processing, and the mono result is broadcast to all output channels on the way out. This design keeps the NAM neural network inference path simple and single-threaded while still supporting the typical stereo ins/outs expected by DAW users.
+
+The following sections walk through the signal chain executed on every audio block, the thread-safety strategy for loading models without dropouts, and the submodule dependency tree that provides the underlying DSP primitives.
+
+## Signal chain
+
+Every call to `ProcessBlock` runs the following stages in order. Each stage operates on the mono internal buffer.
+
+```
+External inputs (1-2 ch)
+        │
+        ▼
+ 1. _ProcessInput()        — collapse to mono, apply input gain (mInputGain)
+        │
+        ▼
+ 2. Noise gate trigger      — mNoiseGateTrigger.Process()  [if noise gate active]
+        │
+        ▼
+ 3. NAM model               — mModel->process()  (ResamplingNAM)
+        │
+        ▼
+ 4. Noise gate gain         — mNoiseGateGain.Process()  [if noise gate active]
+        │
+        ▼
+ 5. Tone stack              — mToneStack->Process()  [if EQ active]
+        │
+        ▼
+ 6. Impulse response        — mIR->Process()  [if IR loaded and IR toggle on]
+        │
+        ▼
+ 7. DC blocker              — mHighPass (5 Hz first-order high-pass)
+        │
+        ▼
+ 8. _ProcessOutput()        — broadcast to output channels, apply output gain (mOutputGain)
+        │
+        ▼
+ 9. _UpdateMeters()         — feed input/output level meters (NAMSender)
+        │
+        ▼
+External outputs (1-2 ch)
+```
+
+### Stage notes
+
+**Input gain** (`_ProcessInput`) — in a DAW context the mono mix is divided by the number of input channels to avoid a loudness jump when a stereo track feeds the plugin. In standalone mode no division is applied, because the user is typically feeding a single guitar input.
+
+**Noise gate** — the gate uses a trigger/gain architecture from `AudioDSPTools`. The trigger analyses the pre-model signal to decide when to open and close; the gain module attenuates the post-model signal accordingly, so the gate silences bleed without affecting the model's internal state.
+
+**Tone stack** — `BasicNamToneStack` implements a simple three-band EQ using recursive linear filters from `AudioDSPTools`: a `LowShelf` for bass, a `Peaking` filter for mid, and a `HighShelf` for treble. All three bands are centred at noon (value 5.0 on a 0–10 scale) by default.
+
+**DC blocker** — a 5 Hz first-order high-pass filter (`mHighPass`) runs after the IR stage to prevent DC offset from accumulating, particularly when convolution is active. This filter also determines the plugin's tail length: the tail is set to 10 cycles of the blocker frequency so that the VST3 tail behaviour tests pass.
+
+**Output clamp** — in standalone mode only, the output samples are clamped to `[-1.0, 1.0]` before being written to the audio interface buffer. In plugin mode no clamping is applied, as downstream processors in a DAW should be able to handle values outside that range.
+
+## Thread-safe model loading
+
+Loading a NAM model or an IR file involves disk I/O and memory allocation, which cannot safely happen on the real-time audio thread. The plugin uses a **staged loading** pattern to swap modules without producing glitches or data races.
+
+<Steps>
+  <Step title="Background load into a staged pointer">
+    When the user selects a model file, `_StageModel()` runs on the UI thread. It calls `nam::get_dsp()` to parse and allocate the model, wraps it in a `ResamplingNAM`, and stores the result in `mStagedModel`.
+  </Step>
+  <Step title="Atomic swap on the audio thread">
+    At the start of the next `ProcessBlock` call, `_ApplyDSPStaging()` checks whether `mStagedModel` is non-null. If so, it moves the staged pointer into `mModel` using `std::move`, nulls out the staged pointer, and signals the UI thread via the `mNewModelLoadedInDSP` atomic bool.
+  </Step>
+  <Step title="Safe removal via atomic flags">
+    When the user clicks the clear button, the UI thread sets `mShouldRemoveModel = true`. The next `_ApplyDSPStaging()` call on the audio thread sees this flag, nulls out `mModel`, and sets `mModelCleared = true` to notify the UI.
+  </Step>
+</Steps>
+
+The same pattern applies to IR loading (`mStagedIR` → `mIR`) and IR removal (`mShouldRemoveIR`). The atomic booleans involved are:
+
+| Atomic bool | Direction | Purpose |
+|---|---|---|
+| `mShouldRemoveModel` | UI → DSP | Request model removal on the audio thread |
+| `mShouldRemoveIR` | UI → DSP | Request IR removal on the audio thread |
+| `mNewModelLoadedInDSP` | DSP → UI | Notify UI that a new model is active, update controls |
+| `mModelCleared` | DSP → UI | Notify UI that the model was removed, clear model info display |
+
+## ResamplingNAM: automatic sample rate adaptation
+
+NAM models are trained at a fixed sample rate (typically 44.1 kHz or 48 kHz). When the host session runs at a different rate, `ResamplingNAM` transparently resamples the audio around the encapsulated `nam::DSP` object.
+
+`ResamplingNAM` extends `nam::DSP` and wraps any loaded model. Internally it uses `dsp::ResamplingContainer<NAM_SAMPLE, 1, 12>` from `AudioDSPTools`, a 12-point polyphase resampler. When the host sample rate matches the model's native rate (`NeedToResample()` returns false), the resampler is bypassed entirely — audio is passed directly to the encapsulated model with zero overhead.
+
+Latency reporting reflects this: `ResamplingNAM::GetLatency()` returns the resampler's latency when resampling is active, and zero otherwise. The plugin calls `_UpdateLatency()` whenever a model is loaded or cleared.
+
+For models that predate the sample rate metadata field in the `.nam` format, `GetNAMSampleRate()` assumes a native rate of 48 kHz, which matches how the majority of early NAM models were captured.
+
+## State serialization
+
+Preset state is saved and restored via iPlug2's `SerializeState` / `UnserializeState` mechanism. The plugin serialises **file paths**, not the model weights themselves. On restore, models are re-loaded from disk using the saved paths.
+
+The serialised byte stream has the following structure:
+
+```
+"###NeuralAmpModeler###"   (magic header string)
+PLUG_VERSION_STR           (e.g. "0.7.13")
+mNAMPath                   (path to .nam file or directory)
+mIRPath                    (path to .wav IR file)
+[serialised parameter values from SerializeParams()]
+```
+
+The magic header (`###NeuralAmpModeler###`) allows `UnserializeState` to distinguish between two legacy formats:
+
+- **0.7.9 and later** — header is present; `_UnserializeStateWithKnownVersion()` handles these.
+- **0.7.3–0.7.8** — no header; `_UnserializeStateWithUnknownVersion()` attempts a best-effort parse of the older layout.
+
+## Plugin parameters
+
+The `EParams` enum defines every automatable parameter exposed to the host:
+
+| Parameter | ID | Default | Range |
+|---|---|---|---|
+| `kInputLevel` | 0 | 0 dB | −20 to +20 dB |
+| `kNoiseGateThreshold` | 1 | −80 dB | −100 to 0 dB |
+| `kToneBass` | 2 | 5.0 | 0–10 |
+| `kToneMid` | 3 | 5.0 | 0–10 |
+| `kToneTreble` | 4 | 5.0 | 0–10 |
+| `kOutputLevel` | 5 | 0 dB | −40 to +40 dB |
+| `kNoiseGateActive` | 6 | true | bool |
+| `kEQActive` | 7 | true | bool |
+| `kIRToggle` | 8 | true | bool |
+| `kCalibrateInput` | 9 | false | bool |
+| `kInputCalibrationLevel` | 10 | 12 dBu | −60 to +60 dBu |
+| `kOutputMode` | 11 | Normalized | Raw / Normalized / Calibrated |
+
+The first six parameters (`kInputLevel` through `kOutputLevel`) are also used as index offsets to position their knob controls on the GUI grid, so their order must not change.
+
+## Submodule dependency tree
+
+<CardGroup cols={2}>
+  <Card title="iPlug2" icon="puzzle">
+    Plugin framework providing the host abstraction layer, GUI system, parameter management, serialization, and platform-specific audio I/O for VST3, AU, AAX, and Standalone targets.
+  </Card>
+  <Card title="NeuralAmpModelerCore" icon="microchip">
+    The NAM DSP engine. Provides `nam::DSP` (base model class), `nam::get_dsp()` (model file parser and factory), and the neural network architectures (WaveNet, LSTM, etc.).
+  </Card>
+  <Card title="AudioDSPTools" icon="wave-square">
+    Low-level DSP utilities: `dsp::ImpulseResponse` (IR convolution), `dsp::noise_gate` (trigger and gain modules), `dsp::ResamplingContainer` (polyphase resampler), `recursive_linear_filter` (shelving and peaking filters), and WAV file I/O.
+  </Card>
+  <Card title="eigen" icon="square-root-variable">
+    Header-only C++ matrix and linear algebra library. Used internally by NeuralAmpModelerCore for the matrix operations in neural network inference.
+  </Card>
+</CardGroup>
+
+## Plugin configuration summary
+
+The plugin is configured in `NeuralAmpModeler/config.h`:
+
+- **Version**: 0.7.13
+- **UI dimensions**: 600 × 400 px (scalable; supports up to 4× via corner resizer)
+- **Channel I/O**: `1-1`, `1-2`, `2-2` in plugin mode; `1-2` in standalone mode
+- **Supported formats**: VST3, AUv2, AAX, Standalone
+- **Latency**: 0 samples at native sample rate; non-zero only when resampling is active

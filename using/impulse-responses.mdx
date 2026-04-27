@@ -1,0 +1,63 @@
+---
+title: "How to load and use impulse responses for cabinet sim"
+description: "Load WAV impulse response files for cabinet simulation after your NAM amp model, and toggle IR processing on or off without unloading the file."
+---
+
+An impulse response (IR) is a WAV file that captures the acoustic character of a guitar cabinet and microphone — the way a specific speaker moves air and a specific mic hears it. Loading an IR after a NAM amp model completes the signal chain: the NAM model provides the preamp and power amp behavior, and the IR adds the physical cabinet and room coloration. Together they give you a full amp-in-a-box sound without any physical hardware.
+
+## Where to get IR files
+
+The NAM community shares both model files and IR files at [neuralampmodeler.com](https://www.neuralampmodeler.com/users#comp-marb84o5). Click the globe **Get** button in the IR section of the plugin to open the page directly. Many third-party IR libraries in standard WAV format are also compatible.
+
+## How to load an IR
+
+<Steps>
+  <Step title="Open the IR file browser">
+    Click the **folder icon** on the left side of the IR browser strip (below the model browser). A system file dialog opens.
+  </Step>
+  <Step title="Select a WAV file">
+    Navigate to your `.wav` IR file and select it. Standard mono or stereo WAV files at any common sample rate are supported.
+
+    <Note>
+      On the **macOS standalone app**, the dialog asks you to pick a **directory** rather than a single file due to sandboxing restrictions. The plugin loads the first `.wav` file in that directory and lets you cycle through the rest with the arrow buttons.
+    </Note>
+  </Step>
+  <Step title="Confirm the IR is loaded">
+    The filename appears in the IR browser label and the **X** clear button replaces the globe **Get** button. The IR is now active in the signal chain.
+  </Step>
+</Steps>
+
+## Navigating between IR files
+
+After a directory has been scanned, you can switch files without reopening the dialog:
+
+- **Left arrow** — loads the previous `.wav` file in the same directory
+- **Right arrow** — loads the next `.wav` file in the same directory
+- **Filename label** — click to open a popup menu listing all `.wav` files in the current directory
+
+## Enabling and disabling the IR
+
+The small **IR toggle switch** to the left of the IR browser strip lets you enable or disable IR processing without unloading the file. When the toggle is off, audio bypasses the IR stage and the browser itself is dimmed to indicate the inactive state.
+
+<Tip>
+  Use the IR toggle to quickly A/B your tone with and without cabinet simulation. Because the file stays loaded, you can flip back and forth instantly to hear the difference.
+</Tip>
+
+## Automatic sample rate handling
+
+When an IR is loaded, the plugin reads the sample rate embedded in the WAV file and compares it to the current session sample rate. If they differ, the IR data is automatically resampled to match the session rate before use. This happens transparently — you don't need to prepare separate versions of your IR files for different session rates.
+
+When the session sample rate changes (for example, if you switch your DAW project settings), any loaded IR is resampled again automatically as part of the plugin's reset sequence.
+
+## Clearing a loaded IR
+
+Click the **X** button on the right side of the IR browser to unload the current IR. The IR toggle resets to its empty state and audio passes through without cabinet coloration.
+
+<CardGroup cols={2}>
+  <Card title="Loading models" icon="microchip" href="/using/loading-models">
+    Load a .nam model file to process your guitar signal before the IR.
+  </Card>
+  <Card title="Controls reference" icon="sliders" href="/using/controls">
+    Adjust tone stack EQ after the model and before the output.
+  </Card>
+</CardGroup>

@@ -1,0 +1,65 @@
+---
+title: "Output modes: choosing between Raw, Normalized, Calibrated"
+description: "Understand the three output modes in Neural Amp Modeler Plugin — Raw, Normalized, and Calibrated — and choose the right one for consistent levels across models."
+---
+
+Neural Amp Modeler Plugin offers three output modes that control how the final output level is determined. Different NAM models can produce very different output levels depending on how they were trained and what gear they capture. Output modes let you manage this variability so you get consistent levels when switching between models or integrating NAM output into a mix. You select the active mode from the **Settings** panel, which opens by clicking the gear icon in the top-right corner of the plugin.
+
+The Output Level knob always applies on top of whatever gain the selected mode calculates. Think of the mode as setting a baseline and the knob as a trim on top of it.
+
+**Normalized** is the default mode when you first install the plugin.
+
+## The three modes
+
+### Raw
+
+In Raw mode, the plugin applies no automatic gain adjustment. The output level is exactly what the NAM model produces, scaled only by the Output Level knob. Use Raw when you want full manual control over output level, when you're doing precise comparisons, or when you're setting up your own gain staging downstream.
+
+### Normalized
+
+In Normalized mode, the plugin reads the **loudness metadata** embedded in the `.nam` file and adds gain so that the model's output loudness is approximately **−18 dB** (relative to the loudness value stored in the model). This means models that were captured at different gain levels are brought to a consistent loudness, making it practical to compare and switch between models without large volume jumps.
+
+<Note>
+  Normalized mode requires the model to contain loudness metadata. If the loaded model does not include this information, the Normalized option in Settings shows **[Not supported by model]** and behaves the same as Raw mode. Older community models trained before this metadata was introduced will not support Normalized mode.
+</Note>
+
+### Calibrated
+
+Calibrated mode uses the model's **output level metadata** together with the **Input Calibration Level** setting to match the plugin's output analog level to its input analog level. In practice, this means the signal path through the plugin preserves the same analog level relationship that existed between the input and output of the original hardware being captured.
+
+To use Calibrated mode:
+
+1. Open **Settings** and set the **Input Calibration Level** to the dBu RMS value that corresponds to 0 dBFS peak at your audio interface input — this is typically documented in your interface's specifications.
+2. Enable the **Calibrate Input** switch in Settings.
+3. Select **Calibrated** as the output mode.
+
+The plugin then computes the output gain as: `Output Level = model's output level metadata − Input Calibration Level`.
+
+<Note>
+  Calibrated mode requires the model to contain output level metadata. If the loaded model does not include it, the Calibrated option shows **[Not supported by model]** and behaves the same as Raw mode. As with Normalized, some older models will not support this mode.
+</Note>
+
+<Warning>
+  If no model is loaded, all three modes behave identically — only the Output Level knob affects the signal level.
+</Warning>
+
+## Choosing the right mode
+
+| Mode | When to use |
+|---|---|
+| **Raw** | Manual gain staging; precise A/B comparisons; models without loudness metadata |
+| **Normalized** | Quickly auditioning and switching between models; keeping levels consistent in a session |
+| **Calibrated** | Matching analog levels for accurate-level signal chains; studio workflows where input/output level relationships matter |
+
+<Tip>
+  If you're just getting started, Normalized mode is a sensible default. It keeps most modern models at a consistent loudness so you can focus on tone rather than gain management.
+</Tip>
+
+<CardGroup cols={2}>
+  <Card title="Controls reference" icon="sliders" href="/using/controls">
+    Learn how the Output Level knob interacts with the active output mode.
+  </Card>
+  <Card title="Loading models" icon="microchip" href="/using/loading-models">
+    Load a .nam model file — output mode metadata depends on the model you load.
+  </Card>
+</CardGroup>

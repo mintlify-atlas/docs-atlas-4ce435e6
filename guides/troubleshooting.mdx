@@ -1,0 +1,129 @@
+---
+title: "Troubleshooting NAM plugin: crashes, sound, and loading"
+description: "Solutions for the most common problems with the Neural Amp Modeler plugin, including no sound, crashes, failed model loads, and high latency."
+---
+
+This page covers the most frequently reported issues with the Neural Amp Modeler plugin and standalone app. Each section describes what the problem looks like, what causes it, and how to resolve it.
+
+<AccordionGroup>
+
+  <Accordion title="No sound from the standalone app">
+    **Symptom:** You launch the standalone app, load a model, and play guitar but hear nothing.
+
+    **Cause:** The standalone app only supports **input 1** on your audio interface. If your guitar cable is plugged into any other input, the app receives no signal.
+
+    This is a known limitation of the standalone's I/O handling. Unlike a DAW host, the standalone does not offer channel routing controls.
+
+    **Fix:**
+    - Move your guitar cable to **input 1** on your interface.
+    - If your interface only has an instrument-level input on channel 2 (for example, the Focusrite Scarlett Solo), use a DI box to connect to channel 1, or switch to the VST3/AU plugin in a DAW where you can route any channel to the plugin.
+
+    Also confirm in your operating system's audio settings that the correct input device is selected in the standalone app's audio configuration.
+  </Accordion>
+
+  <Accordion title="Plugin crashes before the GUI appears">
+    **Symptom:** When you open the plugin in your DAW, the plugin window never appears — the DAW reports a crash or the plugin shows as failed.
+
+    **Cause:** This almost always means an unsupported graphics configuration. The most common scenario on Windows is having both a **dedicated GPU** (such as an NVIDIA card) and an **integrated GPU** (built into the CPU), with the application using the wrong one.
+
+    **Fix (Windows):**
+    <Steps>
+      <Step title="Open your GPU control panel">
+        Right-click the desktop and open the **NVIDIA Control Panel** (or AMD equivalent), or open **Windows Settings → System → Display → Graphics**.
+      </Step>
+      <Step title="Find your DAW or NAM executable">
+        In the GPU control panel, locate the entry for your DAW application. If you are using the standalone, look for `NeuralAmpModeler.exe` directly.
+      </Step>
+      <Step title="Set the preferred GPU">
+        Set the application to use your **dedicated graphics card** rather than integrated graphics. Save the setting.
+      </Step>
+      <Step title="Restart and reopen">
+        Restart the DAW and reopen the plugin. The GUI should now appear.
+      </Step>
+    </Steps>
+
+    If the crash persists with a different graphics setup, check the [GitHub issues](https://github.com/sdatkinson/NeuralAmpModelerPlugin/issues) to see if your specific configuration is a known issue.
+  </Accordion>
+
+  <Accordion title="Model fails to load — (FAILED) shown in the UI">
+    **Symptom:** After selecting a file, the model browser shows `(FAILED) [filename]` instead of the filename.
+
+    **Cause:** The file could not be parsed as a valid NAM model. This can happen if:
+    - The file is not a valid `.nam` file
+    - The file was downloaded incompletely or is corrupted
+    - The model requires a newer version of the NAM plugin than you have installed
+
+    **Fix:**
+    - Verify the file has a `.nam` extension and is a NAM model file, not a ZIP archive or other format.
+    - Re-download the model file and try again.
+    - Check the plugin version in **Settings → About** and compare it against the model's published requirements. Update the plugin from the [Releases page](https://github.com/sdatkinson/NeuralAmpModelerPlugin/releases) if needed.
+    - Try a different model file to confirm whether the issue is specific to one file.
+  </Accordion>
+
+  <Accordion title="IR fails to load">
+    **Symptom:** After selecting an impulse response file, the IR browser shows a failure state or an error dialog appears.
+
+    **Cause:** The plugin only accepts IR files in `.wav` format. Files in other formats (`.aiff`, `.flac`, etc.) will not load. The file may also be corrupted or empty.
+
+    **Fix:**
+    - Confirm the IR file is a valid `.wav` file.
+    - Re-download or re-export the IR file.
+    - Try a different IR file to rule out a format issue.
+    - If you exported the IR yourself, ensure it is exported as an uncompressed PCM WAV file.
+  </Accordion>
+
+  <Accordion title="Model loads but sounds wrong or has unexpected tone">
+    **Symptom:** The model loads successfully but sounds too clean, too saturated, or generally unlike the expected tone.
+
+    **Cause:** The signal level entering the model is likely too low or too high relative to the level the model was trained on. NAM models are sensitive to input level.
+
+    **Fix:**
+    - Adjust the **Input** knob on the main plugin UI. Increasing input level adds more drive and saturation; decreasing it cleans up the tone.
+    - If the loaded model supports input level metadata, enable **Calibrate Input** in the Settings page and set the `Input Calibration Level` to match your interface's analog-to-digital alignment. See the [input calibration guide](/guides/input-calibration) for details.
+    - Try switching the **Output Mode** to **Normalized** in the Settings page. This adjusts the output gain so the model plays back at a consistent loudness level, which can make tonal differences easier to evaluate.
+  </Accordion>
+
+  <Accordion title="High latency while playing through the plugin">
+    **Symptom:** There is a noticeable delay between playing a note and hearing it through the plugin.
+
+    **Cause:** Latency in the plugin comes from two sources: your audio interface buffer size, and any latency introduced by the NAM model itself. Some model architectures (particularly larger LSTM-based models) add internal processing latency. The plugin reports this latency to the host so the DAW can apply compensation during playback — but compensation only helps for recorded tracks, not real-time monitoring.
+
+    **Fix:**
+    - Reduce the audio buffer size in your DAW or audio interface settings. A buffer of 64 or 128 samples at 44.1/48 kHz is typical for low-latency monitoring.
+    - Check the latency reported by the plugin in your DAW's plugin details or routing view. If the model itself is adding significant latency, try a different model with a simpler architecture.
+    - Use direct monitoring through your audio interface (bypassing the DAW signal path entirely) for zero-latency monitoring, then apply the plugin only to the recorded track.
+    - Make sure latency compensation is enabled in your DAW so that recorded tracks stay in time with other tracks.
+  </Accordion>
+
+  <Accordion title="macOS standalone: can't select an individual model file">
+    **Symptom:** When you click the model browser in the macOS standalone app, a folder picker appears instead of a file picker. You cannot navigate to and select a single `.nam` file.
+
+    **Cause:** This is intentional. On macOS, the standalone app does not have permission to traverse arbitrary directories in the file system. To work around this, the app asks you to grant access to an entire folder. It then scans that folder for `.nam` files and lets you browse between them.
+
+    **Fix:**
+    - Organize your `.nam` model files into a single folder.
+    - When prompted, navigate to that folder and click **Open** (or equivalent) to grant the app access to it.
+    - Use the left/right arrow buttons in the model browser to cycle through the models in that folder.
+
+    <Note>
+    This behavior only applies to the macOS standalone app. The VST3/AU plugin running inside a DAW, and the Windows standalone, use a standard file picker to select individual `.nam` files.
+    </Note>
+  </Accordion>
+
+  <Accordion title="Linux: plugin not available">
+    **Symptom:** There is no official NAM plugin package for Linux, and the plugin does not appear in your Linux DAW.
+
+    **Cause:** The official NAM plugin (VST3/AU) does not support Linux.
+
+    **Fix:** Use the community-maintained LV2 plugin, which supports Linux DAWs such as Ardour, REAPER, and Carla:
+
+    [https://github.com/mikeoliphant/neural-amp-modeler-lv2](https://github.com/mikeoliphant/neural-amp-modeler-lv2)
+
+    This is an independent project and is not maintained by the NAM plugin authors.
+  </Accordion>
+
+</AccordionGroup>
+
+## Still stuck?
+
+If none of the above resolves your issue, check the [GitHub Issues](https://github.com/sdatkinson/NeuralAmpModelerPlugin/issues) page to see if your problem has been reported. When filing a new issue, include your operating system, plugin version (visible in **Settings → About**), DAW name and version, and a description of the model or IR file you were using.

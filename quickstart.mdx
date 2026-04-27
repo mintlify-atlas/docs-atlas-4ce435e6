@@ -1,81 +1,65 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
-icon: 'rocket'
+title: "Quick start: from install to playing guitar in minutes"
+description: "Install Neural Amp Modeler Plugin, load a .nam model file and an optional IR, then play guitar through a neural amp capture in your DAW in minutes."
 ---
 
-## Get started in three steps
+This guide gets you from a fresh install to playing guitar through a neural amp model as quickly as possible. You need a DAW with VST3 or AudioUnit support (or the standalone app), a `.nam` model file, and optionally a cabinet IR in `.wav` format.
 
-Get your documentation site running locally and make your first customization.
+<Steps>
+  <Step title="Install the plugin">
+    If you haven't installed the plugin yet, download the pre-built installer from the [GitHub Releases page](https://github.com/sdatkinson/NeuralAmpModelerPlugin/releases) and run it. After installation, rescan plugins in your DAW.
 
-### Step 1: Set up your local environment
+    See the [installation guide](/installation) for platform-specific instructions and file locations.
+  </Step>
+  <Step title="Get a NAM model file">
+    NAM model files use the `.nam` extension. The community shares a large collection of free captures at [neuralampmodeler.com](https://www.neuralampmodeler.com/users#comp-marb84o5). Download one or more `.nam` files and save them to a folder you'll remember.
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+    <Tip>
+      Organize your models by keeping all `.nam` files in a single folder. The plugin's left and right arrow buttons let you cycle through every model in the same directory without opening the file browser each time.
+    </Tip>
+  </Step>
+  <Step title="Load the model in the plugin">
+    Open the plugin in your DAW (or launch the standalone app) and locate the model browser at the top of the interface.
 
-### Step 2: Deploy your changes
+    1. Click the **folder icon** next to the model display to open the file browser.
+    2. Navigate to the folder where you saved your `.nam` files.
+    3. Select a `.nam` file and confirm. The model name appears in the display when it loads successfully.
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    Once loaded, audio processed by the plugin passes through the neural network amp model in real time.
+  </Step>
+  <Step title="(Optional) Load a cabinet IR">
+    A cabinet IR adds speaker and microphone coloration after the amp model for a more complete sound. NAM models often capture just the amp head, so adding an IR is recommended unless the model already includes cabinet simulation.
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+    1. Click the **folder icon** next to the IR display (below the model display).
+    2. Select a `.wav` IR file.
+    3. The IR toggle activates automatically. You can bypass it at any time using the IR toggle switch.
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+    <Note>
+      If you don't have an IR yet, the plugin works fine without one. You can add an IR later without changing anything else in your signal chain.
+    </Note>
+  </Step>
+  <Step title="Play guitar through it">
+    Route your guitar input to the plugin's audio channel in your DAW and play. The plugin processes audio in mono internally, then delivers the output according to your DAW's channel routing.
 
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+    <Tip>
+      Fine-tune your tone using the **Bass**, **Mid**, and **Treble** knobs in the EQ section. Use the **Noise Gate** to cut hum between notes — lower the threshold if the gate is cutting off the tail of your notes, or raise it if background noise is still audible.
+    </Tip>
+  </Step>
+</Steps>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Loading models" icon="microchip" href="/using/loading-models">
+    Learn how to browse, switch, and manage your collection of `.nam` model files.
+  </Card>
+  <Card title="Impulse responses" icon="wave-square" href="/using/impulse-responses">
+    Find out how to load and toggle `.wav` IR files for cabinet simulation.
+  </Card>
+  <Card title="Plugin controls" icon="sliders" href="/using/controls">
+    Understand every knob and switch: input/output levels, tone stack, and meters.
+  </Card>
+  <Card title="Standalone vs plugin" icon="plug" href="/guides/standalone-vs-plugin">
+    Decide whether to use the standalone app or the VST3/AU plugin in your DAW.
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
